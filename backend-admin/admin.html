@@ -1,10 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-$END$
+<h1>Админ-панель</h1>
+
+<h2>Добавить товар</h2>
+<form id="addProductForm">
+    <input type="text" id="name" placeholder="Название" required>
+    <input type="number" id="price" placeholder="Цена" required>
+    <input type="text" id="description" placeholder="Описание" required>
+    <input type="text" id="categories" placeholder="Категории (через запятую)" required>
+    <button type="submit">Добавить</button>
+</form>
+
+<h2>Список товаров</h2>
+<div id="productList"></div>
+<div id="chat">
+    <div id="chat-messages"></div>
+    <input type="text" id="chat-input" placeholder="Введите сообщение..." />
+    <button id="chat-send">Отправить</button>
+</div>
+<script src="admin.js"></script>
 </body>
 </html>

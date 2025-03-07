@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог товаров</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
+<h1>Каталог товаров</h1>
+<div class="categories">
+    <button data-category="all">Все</button>
+    <button data-category="Категория 1">Категория 1</button>
+    <button data-category="Категория 2">Категория 2</button>
+</div>
+<div id="products-container" class="products"></div>
+<div id="chat">
+    <div id="chat-messages"></div>
+    <input type="text" id="chat-input" placeholder="Введите сообщение..." />
+    <button id="chat-send">Отправить</button>
+</div>
+<script src="script.js"></script>
 </body>
 </html>
