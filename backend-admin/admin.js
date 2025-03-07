@@ -82,10 +82,12 @@ const chatMessages = document.getElementById("chat-messages");
 const chatInput = document.getElementById("chat-input");
 const chatSend = document.getElementById("chat-send");
 
-const ws = new WebSocket('ws://localhost:3001'); // Обрати внимание на порт 3001!
 
+
+const ws = new WebSocket('ws://localhost:3001?role=admin'); // Обрати внимание на порт 3001!
+ws.isAdmin = true;
 ws.onopen = () => {
-    console.log('✅ WebSocket подключен');
+    console.log("✅ Админ подключен к WebSocket");
 };
 
 ws.onmessage = (event) => {
@@ -109,6 +111,9 @@ ws.onclose = () => {
 function sendMessage(message) {
     if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
+        const messageElement = document.createElement("div");
+        messageElement.textContent = `Вы (Админ): ${message}`; // Отображаем полученное сообщение
+        chatMessages.appendChild(messageElement);
     } else {
         console.warn('⚠️ WebSocket не открыт');
     }

@@ -84,13 +84,29 @@ app.listen(port, () => {
 });
 
 // WebSocket сервер (отдельный порт)
-const wss = new WebSocket.Server({ port: wsPort });
 
-wss.on('connection', (ws) => {
+const wss = new WebSocket.Server({ port: wsPort });
+let clients = {}; // Объект для хранения всех подключений пользователей
+let lastUserId = null; // Последний активный пользователь
+let admin = null; // Админ (он один)
+
+wss.on('connection', (ws, req) => {
+    // Генерируем уникальный ID для каждого подключения
+    const params = new URLSearchParams(req.url.split("?")[1]);
+    const role = params.get("role") || "user";
+    const userId = role === "admin" ? "admin" : Date.now() + Math.random();
+    if (role === "admin") {
+        admin = ws;
+        console.log("🟠 Админ подключился");
+    } else {
+        clients[userId] = ws;
+        console.log(`🔵 Покупатель ${userId} подключился`);
+    }
+
     console.log('🔗 Новый WebSocket клиент подключен');
 
     ws.on('message', (message) => {
-        console.log(`📩 Сообщение от клиента:`, message, typeof message);
+        console.log(`📩 ${role} (${userId}):`, message, typeof message);
 
         let textMessage;
         if (message instanceof Buffer) {
@@ -104,18 +120,35 @@ wss.on('connection', (ws) => {
         console.log('📩 Сообщение от клиента (строка):', textMessage, typeof textMessage);
 
         if (typeof textMessage === 'string') {
-            // Рассылка всем клиентам
-            wss.clients.forEach(client => {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(textMessage);
+
+            console.log(`📩 Сообщение от ${userId}:`, message.toString());
+
+            if (role === "admin") {
+                // Админ отправляет сообщение последнему активному покупателю
+                const lastUserId = Object.keys(clients).pop();
+                if (lastUserId && clients[lastUserId]) {
+                    clients[lastUserId].send(`Админ: ${textMessage}`);
                 }
-            });
+            } else {
+                // Покупатель отправляет сообщение админу (если он есть)
+                if (admin) {
+                    admin.send(`Покупатель ${userId}: ${textMessage}`);
+                }
+            }
         } else {
             console.error("Ошибка: ожидается строка, а получен объект.");
         }
     });
 
-    ws.on('close', () => console.log('❌ Клиент отключился'));
+    ws.on("close", () => {
+        if (role === "admin") {
+            console.log("❌ Админ отключился");
+            admin = null;
+        } else {
+            console.log(`❌ Покупатель ${userId} отключился`);
+            delete clients[userId];
+        }
+    });
 });
 
 console.log(`📡 WebSocket-сервер запущен на ws://localhost:${wsPort}`);

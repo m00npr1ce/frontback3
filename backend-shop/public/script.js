@@ -64,18 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatInput = document.getElementById("chat-input");
     const chatSend = document.getElementById("chat-send");
 
-    const ws = new WebSocket('ws://localhost:3001'); // Обрати внимание на порт 3001!
+    const ws = new WebSocket('ws://localhost:3001?role=user'); // Обрати внимание на порт 3001!
 
-    ws.onopen = () => {
-        console.log('✅ WebSocket подключен');
-    };
+    ws.onopen = () => console.log("✅ Покупатель подключен к WebSocket");
 
     ws.onmessage = (event) => {
         // Это обработчик для получения сообщений WebSocket
         const message = String(event.data); // Явное преобразование в строку
         console.log('📨 Новое сообщение:', message);
         const messageElement = document.createElement("div");
-        messageElement.textContent = message; // Отображаем полученное сообщение
+        messageElement.textContent = message;// Отображаем полученное сообщение
         chatMessages.appendChild(messageElement);
     };
 
@@ -91,6 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function sendMessage(message) {
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(message);
+            const messageElement = document.createElement("div");
+            messageElement.textContent = `Вы: ${message}`;// Отображаем полученное сообщение
+            chatMessages.appendChild(messageElement);
         } else {
             console.warn('⚠️ WebSocket не открыт');
         }
