@@ -24,15 +24,22 @@ const loadProducts = () => {
 
 // Определяем схему GraphQL
 const schema = buildSchema(`
-    type Product {       
+    type Product {
         name: String!
         price: Float!
         description: String
         categories: [String]
     }
 
+    input ProductFilter {
+        name: String
+        minPrice: Float
+        maxPrice: Float
+        category: String
+    }
+
     type Query {
-        products: [Product]
+        products(filter: ProductFilter): [Product]
         product(id: ID!): Product
         productNamesAndPrices: [Product]
     }
@@ -40,7 +47,31 @@ const schema = buildSchema(`
 
 // Реализуем резолверы GraphQL
 const root = {
-    products: () => loadProducts(),
+    products: ({ filter }) => {
+        const products = loadProducts();
+
+        // Фильтрация по названию, цене и категории
+        return products.filter(product => {
+            let matches = true;
+
+            if (filter) {
+                if (filter.name && !product.name.toLowerCase().includes(filter.name.toLowerCase())) {
+                    matches = false;
+                }
+                if (filter.minPrice && product.price < filter.minPrice) {
+                    matches = false;
+                }
+                if (filter.maxPrice && product.price > filter.maxPrice) {
+                    matches = false;
+                }
+                if (filter.category && !product.categories.includes(filter.category)) {
+                    matches = false;
+                }
+            }
+
+            return matches;
+        });
+    },
     product: ({ id }) => loadProducts().find(product => product.id === id),
     productNamesAndPrices: () => loadProducts().map(({ id, name, price }) => ({ id, name, price })),
 };

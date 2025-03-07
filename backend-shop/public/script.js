@@ -1,12 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("products-container");
     const buttons = document.querySelectorAll(".categories button");
+    const priceFilter = document.getElementById("price-filter");
+    const nameFilter = document.getElementById("name-filter");
+    const hideDescriptionButton = document.getElementById("hide-description");
+    const hidePriceButton = document.getElementById("hide-price");
 
-    // Функция запроса товаров через GraphQL
-    async function fetchProducts() {
+    let hideDescription = false;
+    let hidePrice = false;
+
+    // Функция запроса товаров через GraphQL с фильтрами
+    async function fetchProducts(filter = {}) {
         const query = `
-            {
-                products {
+            query {
+                products(filter: { name: "${filter.name || ""}", minPrice: ${filter.minPrice || 0}, maxPrice: ${filter.maxPrice || 10000}, category: "${filter.category || ""}" }) {
                     name
                     price
                     description
@@ -28,32 +35,50 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Функция загрузки и фильтрации товаров
-    async function loadProducts(category = "all") {
+    async function loadProducts(filter = {}) {
         try {
-            const products = await fetchProducts();
+            const products = await fetchProducts(filter);
             container.innerHTML = "";
-            products
-                .filter(product => category === "all" || product.categories.includes(category))
-                .forEach(product => {
-                    const card = document.createElement("div");
-                    card.className = "product-card";
-                    card.innerHTML = `
-                        <h2>${product.name}</h2>
-                        <p><strong>Цена:</strong> ${product.price} ₽</p>
-                        <p>${product.description}</p>
-                    `;
-                    container.appendChild(card);
-                });
+            products.forEach(product => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.innerHTML = `
+                    <h2>${product.name}</h2>
+                    ${!hidePrice ? `<p><strong>Цена:</strong> ${product.price} ₽</p>` : ""}
+                    ${!hideDescription ? `<p>${product.description}</p>` : ""}
+                `;
+                container.appendChild(card);
+            });
         } catch (error) {
             console.error("Ошибка загрузки товаров:", error);
         }
     }
 
-    // Добавляем обработчики кликов на кнопки категорий
+    // Обработчики фильтров
     buttons.forEach(button => {
         button.addEventListener("click", () => {
-            loadProducts(button.getAttribute("data-category"));
+            loadProducts({ category: button.getAttribute("data-category") });
         });
+    });
+
+    priceFilter.addEventListener("input", () => {
+        const minPrice = parseFloat(priceFilter.value.split("-")[0]);
+        const maxPrice = parseFloat(priceFilter.value.split("-")[1]);
+        loadProducts({ minPrice, maxPrice });
+    });
+
+    nameFilter.addEventListener("input", () => {
+        loadProducts({ name: nameFilter.value });
+    });
+
+    hideDescriptionButton.addEventListener("click", () => {
+        hideDescription = !hideDescription;
+        loadProducts({}); // Перезагружаем товары с учетом фильтра
+    });
+
+    hidePriceButton.addEventListener("click", () => {
+        hidePrice = !hidePrice;
+        loadProducts({}); // Перезагружаем товары с учетом фильтра
     });
 
     // Загружаем все товары при старте

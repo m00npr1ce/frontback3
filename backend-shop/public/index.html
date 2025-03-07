@@ -8,10 +8,19 @@
 </head>
 <body>
 <h1>Каталог товаров</h1>
+<div class="filters">
+    <input type="text" id="name-filter" placeholder="Поиск по названию">
+    <input type="range" id="price-filter" min="0" max="10000" step="100" value="10000">
+    <label for="price-filter">Фильтр по цене: 0 - 10000</label>
+</div>
 <div class="categories">
-    <button data-category="all">Все</button>
+    <button data-category="">Все</button>
     <button data-category="Категория 1">Категория 1</button>
     <button data-category="Категория 2">Категория 2</button>
+</div>
+<div class="toggle-buttons">
+    <button id="hide-price">Скрыть цену</button>
+    <button id="hide-description">Скрыть описание</button>
 </div>
 <div id="products-container" class="products"></div>
 <div id="chat">
